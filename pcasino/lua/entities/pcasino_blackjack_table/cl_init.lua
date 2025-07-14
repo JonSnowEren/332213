@@ -129,30 +129,37 @@ end
 
 -- Optimized chip creation
 function ENT:AddBet(pad, amount)
+    -- Nil kontrolü ekleyin
+    if not self.currentBets then
+        self.currentBets = {}
+    end
+    
     self.currentBets[pad] = self.currentBets[pad] or {}
     
     local chips = PerfectCasino.Chips:GetFromNumber(amount)
+    if not chips then return end -- Nil kontrolü
+    
     local ang = self:GetAngles()
     
     -- Batch chip creation
     for k=#PerfectCasino.Chips.Types, 0, -1 do
-        if not chips[k] then continue end
-        
-        for i=1, chips[k] do
-            local plaque = k >= 11
-            local model = plaque and self.cachedModels.plaque or self.cachedModels.chip
-            
-            local chip = ClientsideModel(model)
-            table.insert(self.currentBets[pad], chip)
-            chip:SetParent(self)
-            chip:SetSkin(plaque and k-11 or k)
-            
-            local stackHeight = #self.currentBets[pad]
-            chip:SetPos(self:GetPos() + 
-                (self:GetUp() * (15.8 + stackHeight * 0.3)) + 
-                (self:GetForward() * (8 - 10 * preset[pad].p)) + 
-                (self:GetRight() * -13 * (pad - 2.5)))
-            chip:SetAngles(ang)
+        if chips and chips[k] then -- Güvenli kontrol
+            for i=1, chips[k] do
+                local plaque = k >= 11
+                local model = plaque and self.cachedModels.plaque or self.cachedModels.chip
+                
+                local chip = ClientsideModel(model)
+                table.insert(self.currentBets[pad], chip)
+                chip:SetParent(self)
+                chip:SetSkin(plaque and k-11 or k)
+                
+                local stackHeight = #self.currentBets[pad]
+                chip:SetPos(self:GetPos() + 
+                    (self:GetUp() * (15.8 + stackHeight * 0.3)) + 
+                    (self:GetForward() * (8 - 10 * preset[pad].p)) + 
+                    (self:GetRight() * -13 * (pad - 2.5)))
+                chip:SetAngles(ang)
+            end
         end
     end
 end
@@ -170,6 +177,10 @@ end
 
 -- Optimized card creation
 function ENT:AddCard(pad, hand, face)
+    if not self.currentCards then
+        self.currentCards = {}
+    end
+    
     self.currentCards[pad] = self.currentCards[pad] or {}
     self.currentCards[pad][hand] = self.currentCards[pad][hand] or {}
     
@@ -276,6 +287,10 @@ net.Receive("pCasino:Blackjack:StartingCards", function()
     local hands = net.ReadTable()
     local dealersHand = net.ReadTable()
     
+    -- Initialize tables if needed
+    entity.curHands = entity.curHands or {}
+    entity.currentCards = entity.currentCards or {}
+    
     -- Batch processing
     for i, p in pairs(hands) do
         entity.curHands[i] = {}
@@ -324,11 +339,16 @@ net.Receive("pCasino:Blackjack:Split", function()
     -- Distance check optimization
     if entity:GetPos():DistToSqr(LocalPlayer():GetPos()) > 100000 then return end
     
+    -- currentCards kontrolü ekleyin
+    if not entity.currentCards then
+        entity.currentCards = {}
+    end
+    
     local pad = net.ReadUInt(3)
     local hands = net.ReadTable()
     
     -- Clear existing cards efficiently
-    if entity.currentCards[pad] then
+    if entity.currentCards and entity.currentCards[pad] then
         for k, v in pairs(entity.currentCards[pad]) do
             for n, m in pairs(v) do
                 if IsValid(m) then
@@ -338,6 +358,7 @@ net.Receive("pCasino:Blackjack:Split", function()
         end
     end
     
+    entity.curHands = entity.curHands or {}
     entity.curHands[pad] = {}
     entity.currentCards[pad] = {}
     
@@ -361,6 +382,11 @@ net.Receive("pCasino:Blackjack:DealerCards", function()
     
     local dealersCards = net.ReadTable()
     
+    -- Nil kontrolü
+    if not entity.currentCards then
+        entity.currentCards = {}
+    end
+    
     -- Remove the blind card
     if entity.currentCards and entity.currentCards[0] and entity.currentCards[0][1] and entity.currentCards[0][1][2] then
         if IsValid(entity.currentCards[0][1][2]) then
@@ -374,7 +400,11 @@ net.Receive("pCasino:Blackjack:DealerCards", function()
         timer.Simple(i-2, function()
             if not IsValid(entity) then return end
             entity:AddCard(0, 1, dealersCards[i])
-            table.insert(entity.curHands[0][1], dealersCards[i])
+            
+            -- curHands kontrolü
+            if entity.curHands and entity.curHands[0] and entity.curHands[0][1] then
+                table.insert(entity.curHands[0][1], dealersCards[i])
+            end
         end)
     end
 end)
