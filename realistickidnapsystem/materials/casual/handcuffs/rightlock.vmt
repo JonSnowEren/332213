@@ -1,0 +1,22 @@
+"VertexLitGeneric"
+{
+	"$basetexture" 				"casual\handcuffs\handcuffs_base"
+	"$bumpmap" 					"casual\handcuffs\handcuffs_nrm"
+
+	"$model" 					"1"
+
+	"$halflambert"				"1"
+
+	"$envmap"					"env_cubemap"
+	"$envmaptint"				"[.05 .05 .05]"
+	"$normalmapalphaenvmapmask"	"1"
+
+	"$phong"					"1"
+	"$phongboost"				"0.2"
+	"$phongexponent"			"5"
+	"$phongfresnelranges"		"[.2 .5 .5]"
+
+	"$rimlight"					"1"
+	"$rimlightexponent"       	"0.5"
+	"$rimlightboost"          	"1.2"
+}

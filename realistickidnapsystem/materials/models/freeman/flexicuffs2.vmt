@@ -1,0 +1,23 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/freeman/flexicuffs2_diffuse"	
+                "$bumpmap" "models/freeman/flexicuffs_lazyspecular"
+                  "$phongexponenttexture" "models/freeman/flexicuffs_lazyspecular"
+	"$halflambert" "0"
+	"$phong" "1"
+	"$phongboost" "0.9"
+	"$phongexponent" "3"
+	"$phongtint" "[0 0 0]"
+	"$phongalbedotint" "1"
+	"$phongfresnelranges" "[2.0 0.5 0.05]"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "3"
+	"$rimlightboost" "0.8"
+
+	"$ambientocclusion" "1"
+	"$diffuseexp" "1"
+
+
+
+}
